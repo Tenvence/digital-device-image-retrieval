@@ -44,10 +44,8 @@ def triplet_contrast_train():
 
     model.train()
 
-    batch_size = 64
-
     triplet_data_set = TripletDataSet(train_path, os.path.join(train_path, 'label.txt'), transforms=Compose([ResizePad(300), ToTensor()]))
-    data_loader = DataLoader(triplet_data_set, batch_size=batch_size, shuffle=True, num_workers=32)
+    data_loader = DataLoader(triplet_data_set, batch_size=64, shuffle=True, num_workers=16)
 
     epoch = 30
     warm_epoch = 3
@@ -66,6 +64,8 @@ def triplet_contrast_train():
 
             triplet_sample = torch.cat([sample, pos_sample, neg_sample], dim=0)
             triplet_output = model(triplet_sample)
+
+            batch_size = sample.shape[0]
 
             sample_embedding = triplet_output[:batch_size, ...]
             pos_embedding = triplet_output[batch_size:2 * batch_size, ...]
