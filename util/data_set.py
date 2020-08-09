@@ -1,5 +1,6 @@
 import os
 import numpy as np
+import torch.nn.functional as f
 import torch.utils.data as data
 import PIL.Image
 
@@ -11,11 +12,11 @@ class TripletDataSet(data.Dataset):
         self.sample_dict, self.sample_arr = self.parse_label(label_path)
 
     def __getitem__(self, index):
-        sample_path, sample_label = self.sample_arr[index]
-        pos_path = np.random.choice(self.sample_dict[sample_label])
+        sample_path, pos_label = self.sample_arr[index]
+        pos_path = np.random.choice(self.sample_dict[pos_label])
 
         keys = list(self.sample_dict.keys()).copy()
-        keys.remove(sample_label)
+        keys.remove(pos_label)
         neg_label = np.random.choice(keys)
         neg_path = np.random.choice(self.sample_dict[neg_label])
 
@@ -28,7 +29,7 @@ class TripletDataSet(data.Dataset):
             pos_sample = self.transforms(pos_sample)
             neg_sample = self.transforms(neg_sample)
 
-        return sample, pos_sample, neg_sample
+        return sample, pos_sample, neg_sample, pos_label, neg_label
 
     def __len__(self):
         return len(self.sample_arr)
