@@ -1,14 +1,13 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as fun
 import torchvision.models as cv_models
+from torch.cuda.amp import autocast
 
 
 class Encoder(nn.Module):
     def __init__(self, feature_num):
         super(Encoder, self).__init__()
         self.backbone = nn.Sequential(*list(cv_models.resnet50(pretrained=True).children())[:-1])
-        # self.fc = nn.Linear(in_features=2048, out_features=feature_num)
         self.mlp = nn.Sequential(
             nn.Linear(in_features=2048, out_features=feature_num),
             nn.BatchNorm1d(num_features=feature_num),
@@ -16,12 +15,11 @@ class Encoder(nn.Module):
             nn.Linear(in_features=feature_num, out_features=feature_num)
         )
 
+    @autocast()
     def forward(self, x):
         x = self.backbone(x)
         x = torch.flatten(x, 1)
-        # x = self.fc(x)
         x = self.mlp(x)
-        # x = fun.normalize(x, p=2, dim=-1)
 
         return x
 
